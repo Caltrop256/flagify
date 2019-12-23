@@ -1,0 +1,29 @@
+@font-face { font-family: ComfortaaRegular; src: url('./Comfortaa-Regular.ttf') format("truetype"); } 
+
+body {
+    overflow: hidden;
+}
+
+canvas {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.OL {
+    z-index: 100;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    color: #FFF;
+    text-align: center;
+    padding-top: 10vh;
+    font-family: ComfortaaRegular, sans-serif;
+    font-size: 5vw;
+}
+.failure {
+    display: none;
+}

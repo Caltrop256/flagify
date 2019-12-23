@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Flagify</title>
+        <meta content="Flagify" property="og:title">
+        <meta content="" property="og:description">
+        <meta content="Caltrop" property="og:site_name">
+        <meta name="theme-color" content="#FE019A">
+        <meta name="robots" content="index, follow">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <link rel=" icon" href="./src/favicon.png">
+        <meta charset="UTF-8">
+        <link href='./src/style.css' rel='stylesheet' type='text/css'>
+    </head>
+    
+    <body>
+        <script src="./src/Three50dev2.js"></script>
+        <script src="./src/particle.js"></script>
+        <script src="./src/cloth.js"></script>
+        <script src="./src/flag.js"></script>
+        <script type="x-shader/x-fragment" id="fragmentShaderDepth">
+            uniform sampler2D texture;
+            varying vec2 vUV;
+            vec4 pack_depth( const in float depth ) {
+                const vec4 bit_shift = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
+                const vec4 bit_mask  = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
+                vec4 res = fract( depth * bit_shift );
+                res -= res.xxyz * bit_mask;
+                return res;
+            }
+            void main() {
+                vec4 pixel = texture2D( texture, vUV );
+                if ( pixel.a < 0.5 ) discard;
+                gl_FragData[ 0 ] = pack_depth( gl_FragCoord.z );
+            }
+        </script>
+        <script type="x-shader/x-vertex" id="vertexShaderDepth">
+            varying vec2 vUV;
+            void main() {
+                vUV = 0.75 * uv;
+                vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        </script>
+        <script src="./src/render.js"></script>
+
+        <div class="OL loading">
+            <h1>Loading...</h1>
+        </div>
+        <div class="OL failure">
+            <h1>An Error occured!</h1>
+            <p id="details">An Error occured while displaying this Error</p>
+        </div>
+    </body>
+</html>
