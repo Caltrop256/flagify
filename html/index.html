@@ -51,5 +51,16 @@
             <h1>An Error occured!</h1>
             <p id="details">An Error occured while displaying this Error</p>
         </div>
+
+        <div class=sidebar id=sidebar>
+            <h1>Flagify</h1>
+            <span>Manual Wind</span><input id="manWind" type="checkbox" oninput="if(this.checked) manualWindEdit(); else disableWindEdit(); setCookie('rotWindEn', this.checked);"><br>
+            <span>Wind Rotation</span><input id="windRot" disabled type="range" min=0 max=360 value=0 oninput="manWindRotation = ~~this.value; setCookie('manWindRot', this.value)"><br>
+            <span>Wind Force</span><input id="windForce" disabled type="range" min=0 max=300 value=0 oninput="manWindForce = ~~this.value; setCookie('manWindForce', this.value)"><br>
+            <div class="border"></div>
+            <span>Manual Camera</span><input id="manCam" type="checkbox" oninput="if(this.checked) manualCameraEdit(); else disableCameraEdit(); setCookie('rotCamEn', this.checked)"><br>
+            <span>Camera Rotation</span><input id="cameraRot" disabled type="range" min=0 max=360 value=0 oninput="manRotation = ~~this.value; setCookie('manCamRot', this.value)"><br>
+        </div>
+        <button class=sidebarButton id=sidebarButton onclick="openNav()">&#9776;</button>
     </body>
 </html>

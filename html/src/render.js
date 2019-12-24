@@ -10,14 +10,21 @@ var container, stats,
     clothGeometry,
     object,
     moon = Math.random() > 0.9,
-    rotate = true;
+    manRotation = 0,
+    manWindRotation = 0,
+    manWindForce = 0,
+    autoWind = true,
+    autoRotate = true;
 //thanks to https://github.com/Rob--W/cors-anywhere for helping me give reddit the middle finger c:
 var corsURL = 'https://cors-anywhere.herokuapp.com/';
-getURL().then(url =>{
-    if(!url) return;
-    init(url);
-    animate();
-});
+window.onload = ()=>
+    getURL().then(url => 
+    {
+        if(!url) 
+            return;
+        init(url);
+        animate();
+    });
 function findComment(id,children) //hh i just learnt you can just do reddit.com/comments/postID/commentID 
 {
     for(var {data} of children)
@@ -31,15 +38,23 @@ function findComment(id,children) //hh i just learnt you can just do reddit.com/
     return false;
 }
 async function getURL() {
+    if(!window.fetch) {
+        return fail('You are using an unsupported Browser')
+    }
     var url = location.href.split('/'); //should always be 'https','','caltrop.dev','flag',<post id>,<comment id> (optional)
     var postID = url[4]; 
+    if(!postID)
+        return fail('Please enter a post ID');
     var commentID = url[5];
+    
     var response = await fetch(corsURL+'https://www.reddit.com/comments/'+postID+'/.json')
     if(response.status == 404) 
         return fail('Invalid URL!');
-    if(response.status == 403) 
+    else if(response.status == 403) 
         return fail('Cannot access post!');
-        
+    else if(response.status == 400) {
+        return fail('No Header');
+    }
 
     var body = await response.json()
     var data = body[0].data.children[0].data;
@@ -118,6 +133,7 @@ function init(flagImage) {
 
     THREE.ImageUtils.crossOrigin = 'anonymous';
     var clothTexture = THREE.ImageUtils.loadTexture(flagImage);
+    if(!clothTexture) return fail('Your Browser has an encountered an Error while loading the texture');
     clothTexture.wrapS = clothTexture.wrapT = THREE.RepeatWrapping;
     clothTexture.anisotropy = 16;
 
@@ -197,6 +213,7 @@ function init(flagImage) {
     Array.from(document.getElementsByClassName('OL')).forEach((el) => {
         el.remove();
     })
+    applyCookies();
 }
 
 function onWindowResize() {
@@ -212,8 +229,12 @@ function animate() {
     requestAnimationFrame( animate );
 
     var time = Date.now();
-    windStrength = Math.cos( time / 7000 ) * 100 + 200;
-    windForce.set( Math.sin( time / 2000 ), Math.cos( time / 3000 ), Math.sin( time / 1000 ) ).normalize().multiplyScalar( windStrength );
+    if(autoWind) {
+        windStrength = Math.cos( time / 7000 ) * 100 + 200;
+        windForce.set( Math.sin( time / 2000 ), Math.cos( time / 3000 ), Math.sin( time / 1000 ) ).normalize().multiplyScalar( windStrength );
+    } else {
+        windForce.set( Math.cos((manWindRotation / 180 * Math.PI)), Math.cos( time / 3000 ), Math.sin(((manWindRotation) / 180 * Math.PI))).normalize().multiplyScalar( manWindForce )
+    }
     simulate(time);
     render();
 }
@@ -232,9 +253,95 @@ function render() {
     clothGeometry.normalsNeedUpdate = true;
     clothGeometry.verticesNeedUpdate = true;
 
-    camera.position.x = Math.cos( timer ) * 1500;
-    camera.position.z = Math.sin( timer ) * 1500;
+    if(autoRotate) {
+        camera.position.x = Math.cos( timer ) * 1500;
+        camera.position.z = Math.sin( timer ) * 1500;
+    } else {
+        camera.position.x = Math.cos( manRotation / 180 * Math.PI ) * 1500;
+        camera.position.z = Math.sin( manRotation / 180 * Math.PI ) * 1500;
+    }
 
     camera.lookAt( scene.position );
     renderer.render( scene, camera );
+};
+
+function vw(n) {
+    return (n * (window.innerWidth/100));
+}
+
+function openNav() {
+    document.getElementById("sidebar").style.width = vw(13.5)+"px";
+    document.getElementById('sidebarButton').onclick = closeNav
+    document.getElementById('sidebarButton').style.left = vw(13.5)+"px";
+}
+
+function closeNav() {
+    document.getElementById("sidebar").style.width = "0";
+    document.getElementById('sidebarButton').onclick = openNav
+    document.getElementById('sidebarButton').style.left = "0px";
+}
+
+function manualWindEdit() {
+    autoWind = false;
+    document.getElementById('windRot').disabled = false;
+    document.getElementById('windForce').disabled = false;
+}
+
+function disableWindEdit() {
+    autoWind = true;
+    document.getElementById('windRot').disabled = true;
+    document.getElementById('windForce').disabled = true;
+}
+
+function manualCameraEdit() {
+    autoRotate = false;
+    manRotation = (Date.now() * 0.0002 - 45) % 360;
+    document.getElementById('cameraRot').disabled = false;
+    document.getElementById('cameraRot').value = manRotation;
+}
+
+function disableCameraEdit() {
+    autoRotate = true;
+    document.getElementById('cameraRot').disabled = true;
+}
+
+function setCookie(cname, cvalue) {
+    var d = new Date();
+    d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
+    var expires = "expires="+d.toUTCString();
+    document.cookie = cname + "=" + cvalue.toString() + ";" + expires + ";path=/";
+}
+  
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function applyCookies() {
+    if(getCookie('rotWindEn') && getCookie('rotWindEn') == "true") {
+        document.getElementById('manWind').click();
+    }
+
+    manWindRotation = +getCookie('manWindRot');
+    document.getElementById('windRot').value = manWindRotation;
+
+    manWindForce = +getCookie('manWindForce');
+    document.getElementById('windForce').value = manWindForce;
+
+    if(getCookie('rotCamEn') && getCookie('rotCamEn') == "true") {
+        document.getElementById('manCam').click();
+    }
+
+    manRotation = +getCookie('manCamRot');
+    document.getElementById('cameraRot').value = manRotation;
 }

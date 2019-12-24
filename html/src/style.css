@@ -27,3 +27,55 @@ canvas {
 .failure {
     display: none;
 }
+
+.sidebar {
+    z-index: 10;
+    white-space: nowrap;
+    height: 20vh;
+    width: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.5s;
+    font-family: sans-serif, 'Segoe UI', Tahoma, Geneva, Verdana;
+    text-align: center;
+}
+
+.sidebar h1 {
+    display: block;
+    color: white;
+    text-align: center;
+    font-size: 1.5vw;
+}
+
+input[type="range"] {
+    width: 30%;
+}
+
+span {
+    color: white;
+}
+
+.border {
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px solid white;
+}
+
+.sidebarButton {
+    z-index: 30;
+    transition: 0.5s;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    height: 20vh;
+    color: white;
+    background-color: grey;
+    border: 1px solid black;
+}
+
+.sidebarButton:focus {
+    border: none;
+}
